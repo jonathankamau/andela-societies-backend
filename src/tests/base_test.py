@@ -140,10 +140,22 @@ class BaseTestCase(TestCase):
         self.nigeria = Country(name='Nigeria')
 
         # test societies
-        self.phoenix = Society(name="Phoenix")
-        self.istelle = Society(name="iStelle")
-        self.sparks = Society(name="Sparks")
-        self.invictus = Society(name="Invictus")
+        self.phoenix = Society(name="Phoenix",
+                               color_scheme="#00000",
+                               logo="https://bit.ly/2FTjkbV",
+                               photo="https://bit.ly/2k2l0qx")
+        self.istelle = Society(name="iStelle",
+                               color_scheme="#00000",
+                               logo="https://bit.ly/2FTjkbV",
+                               photo="https://bit.ly/2k2l0qx")
+        self.sparks = Society(name="Sparks",
+                              color_scheme="#00000",
+                              logo="https://bit.ly/2FTjkbV",
+                              photo="https://bit.ly/2k2l0qx")
+        self.invictus = Society(name="Invictus",
+                                color_scheme="#00000",
+                                logo="https://bit.ly/2FTjkbV",
+                                photo="https://bit.ly/2k2l0qx")
 
         # test roles
         self.successops_role = Role(uuid="-KkLwgbeJUO0dQKsEk1i",
