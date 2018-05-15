@@ -197,6 +197,10 @@ class LogEditActivitySchema(BaseSchema):
             )
 
 
+class UserSchema(BaseSchema):
+    pass
+
+
 activity_types_schema = ActivityTypesSchema(many=True)
 activity_schema = ActivitySchema()
 single_logged_activity_schema = LoggedActivitySchema()

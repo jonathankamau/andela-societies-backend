@@ -2,10 +2,14 @@
 Sample Data for Initial Run.
 This contains the sample initial data required for the test run of the system.
 """
+import base64
 import datetime
+import os
+import requests
+from jose import jwt
 
-from api.models import (ActivityType, Activity, Country, LoggedActivity, Society,
-                        User, Cohort, Role)
+from api.models import (ActivityType, Activity, Country, LoggedActivity,
+                        Society, User, Cohort, Role)
 
 # activity types
 interview = ActivityType(name="Bootcamp Interviews",
@@ -61,14 +65,38 @@ sparks = Society(name="Sparks")
 invictus = Society(name="Invictus")
 societies = [phoenix, istelle, sparks, invictus]
 
+# setup dev user info to access Andela API
+public_key = base64.b64decode(os.environ.get('PUBLIC_KEY')).decode("utf-8")
+authorization_token = os.environ.get('DEV_TOKEN')
+payload = jwt.decode(authorization_token,
+                     public_key,
+                     algorithms=['RS256'],
+                     options={
+                         'verify_signature': True,
+                         'verify_exp': True
+                     })
+url = os.environ.get('ANDELA_API_URL')
+Bearer = 'Bearer '
+headers = {'Authorization': Bearer + authorization_token}
+cohort_data_response = requests.get(url + 'cohorts', headers=headers).json()
+location_data_response = requests.get(url + 'locations', headers=headers).json()
+
 # test countries
-kenya = Country(name='Kenya')
-uganda = Country(name='Uganda')
-nigeria = Country(name='Nigeria')
-countries = [kenya, uganda, nigeria]
+locations = {}
+for location in location_data_response.get('values'):
+    name = location.get("name")
+    locations[name] = Country(name=name, uuid=location.get('id'))
+countries = list(locations.values())
 
 # cohorts
-cohort_14_ke = Cohort(name='Cohort 14', country=kenya)
+cohorts = []
+for cohort_information in cohort_data_response.get('values'):
+    name = cohort_information.get('name')
+    country = locations.get(cohort_information.get('location').get('name'))
+    cohort = Cohort(name=name,
+                    uuid=cohort_information.get('id'),
+                    country_id=country.uuid)
+    cohorts.append(cohort)
 
 # roles available
 roles = [Role(uuid="-KXGy1EB1oimjQgFim6F", name="Success"),
@@ -86,8 +114,8 @@ member = User(
     photo="https://lh6.googleusercontent.com/-1DhBLOJentg/AAAAAAAAA"
           "AI/AAAAAAAAABc/ImeP_cAI/photo.jpg?sz=50",
     email="test.user.societies@andela.com",
-    country=kenya,
-    cohort=cohort_14_ke,
+    country=locations.get('Nairobi'),
+    cohort=cohorts[0],
     society=phoenix
 )
 member.roles.append(roles[2])
@@ -99,8 +127,8 @@ president = User(
     photo="https://lh6.googleusercontent.com/-1DhBLOJentg/AAAAAAAAA"
           "AI/AAAAAAnAABc/ImeP_cAI/photo.jpg?sz=50",
     email="test.president.societies@andela.com",
-    country=kenya,
-    cohort=cohort_14_ke,
+    country=locations.get('Nairobi'),
+    cohort=cohorts[0],
     society=phoenix
 )
 president.roles.append(roles[5])
@@ -112,7 +140,7 @@ success_ops = User(
     photo="https://lh6.googleusercontent.com/-1DhBLOJentg/AAAAAAAAA"
           "AI/AAAAAAnAABc/ImeP_cAI/photo.jpg?sz=50",
     email="test.successops.societies@andela.com",
-    country=kenya
+    country=locations.get('Nairobi')
 )
 success_ops.roles.append(roles[3])
 
@@ -134,7 +162,8 @@ open_saturdays_2018 = Activity(
     added_by=president
 )
 
-member.activities.extend([python_hackathon, interview_2017, open_saturdays_2018])
+member.activities.extend([python_hackathon, interview_2017,
+                          open_saturdays_2018])
 
 # Logged Activities
 hackathon_points = LoggedActivity(
@@ -144,7 +173,7 @@ hackathon_points = LoggedActivity(
     activity_type=hackathon,
     status='approved', approver_id=success_ops.uuid,
     reviewer_id=president.uuid,
-    activity_date = python_hackathon.activity_date
+    activity_date=python_hackathon.activity_date
 )
 interview_points = LoggedActivity(
     value=interview.value * 5,
@@ -153,17 +182,18 @@ interview_points = LoggedActivity(
     activity_type=interview,
     status='rejected', approver_id=success_ops.uuid,
     reviewer_id=president.uuid,
-    activity_date = interview_2017.activity_date
+    activity_date=interview_2017.activity_date
 )
 open_saturday_points = LoggedActivity(
     value=open_saturdays.value,
     activity=open_saturdays_2018,
     user=member, society=invictus,
     activity_type=open_saturdays,
-    activity_date = open_saturdays_2018.activity_date
+    activity_date=open_saturdays_2018.activity_date
 )
 logged_activities = [hackathon_points, interview_points, open_saturday_points]
 
 
-test_data = activity_types + societies + users + logged_activities + countries + roles
+test_data = (activity_types + societies + users + logged_activities
+             + countries + roles + cohorts)
 production_data = activity_types + countries + societies

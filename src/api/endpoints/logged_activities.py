@@ -114,7 +114,7 @@ class LoggedActivityAPI(Resource):
         if not isinstance(parsed_result, ParsedResult):
             return parsed_result
 
-        # update fields
+        # update fields for fellow
         logged_activity.name = result.get('name')
         logged_activity.description = result.get('description')
         logged_activity.activity = parsed_result.activity
@@ -122,6 +122,10 @@ class LoggedActivityAPI(Resource):
         logged_activity.value = parsed_result.activity_value
         logged_activity.activity_type = parsed_result.activity_type
         logged_activity.activity_date = parsed_result.activity_date
+
+        # update for sociery sectary
+
+        # update for success people
 
         db.session.commit()
 

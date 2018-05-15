@@ -4,12 +4,14 @@ This module contains the authorisation required by the client to
 communicate with the API.
 """
 import base64
+import os
+import requests
 from functools import wraps
 
 from flask import g, jsonify, request, current_app
 from jose import ExpiredSignatureError, JWTError, jwt
 
-from api.models import User, Role
+from api.models import User, Role, Country, Society, Cohort
 
 
 def auth_response(status_code, message):
@@ -92,9 +94,26 @@ def store_user_details(payload):
 
     # save user to db if they haven't been saved yet
     if not user:
-        user = User(
-            uuid=uuid, name=name, email=email, photo=photo
-        )
+        # fetch user info from Andela Api
+        url = os.environ.get('ANDELA_API_URL')
+        token = request.headers.get('Authorization')
+        Bearer = 'Bearer '
+        headers = {'Authorization': Bearer + token}
+        user_data_response = requests.get(url + 'users/' + uuid,
+                                          headers=headers).json()
+
+        # Location, society, cohort
+        cohort = Cohort.query.filter_by(
+                    uuid=user_data_response.get('cohort').get('id')).first()
+        location = Country.query.filter_by(
+                    uuid=user_data_response.get('location').get('id')).first()
+
+        # get from DB base on cohort the society for the user
+
+        user = User(uuid=uuid, name=name, email=email, photo=photo)
+
+        cohort.members.append(user)
+        location.members.append(user)
 
     # set current user in flask global variable, g
     user.roles = [Role.query.filter_by(name=role).first()

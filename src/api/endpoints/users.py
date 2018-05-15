@@ -20,7 +20,7 @@ class UserAPI(Resource):
             user["society"] = None
 
         logged_activities = []
-        user_points = _user.points
+        user_points = _user.logged_activities
         for _point in user_points:
             _activity = _point.activity
             activity = _activity.serialize()
@@ -34,7 +34,7 @@ class UserAPI(Resource):
             logged_activities.append(activity)
 
         user["loggedActivities"] = logged_activities
-        logged_points = sum([point.value for point in _user.points])
+        logged_points = sum([point.value for point in _user.logged_activities])
         user["totaLoggedPoints"] = logged_points
 
         return jsonify(dict(data=user))

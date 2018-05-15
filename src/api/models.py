@@ -102,6 +102,7 @@ class Country(Base):
     """Models different centres in Andela."""
 
     __tablename__ = 'countries'
+    uuid = db.Column(db.String, primary_key=True)
     members = db.relationship('User',
                               backref='country',
                               lazy='dynamic')
@@ -114,6 +115,7 @@ class Cohort(Base):
     """Models cohorts available in Andela."""
 
     __tablename__ = 'cohorts'
+    uuid = db.Column(db.String, primary_key=True)
     country_id = db.Column(db.String, db.ForeignKey('countries.uuid'))
 
     members = db.relationship('User', backref='cohort')
@@ -131,9 +133,10 @@ class User(Base):
     cohort_id = db.Column(db.String, db.ForeignKey('cohorts.uuid'))
 
     logged_activities = db.relationship(
-        'LoggedActivity', backref='user', lazy = 'dynamic',
-        order_by = 'desc(LoggedActivity.created_at)'
-    )
+        'LoggedActivity',
+        backref='user',
+        lazy='dynamic',
+        order_by='desc(LoggedActivity.created_at)')
 
     created_activities = db.relationship('Activity',
                                          backref='added_by',
@@ -218,3 +221,7 @@ class LoggedActivity(Base):
 
     activity = db.relationship('Activity', uselist=False)
     activity_type = db.relationship('ActivityType', uselist=False)
+
+
+# TODO
+# Add redeption model
