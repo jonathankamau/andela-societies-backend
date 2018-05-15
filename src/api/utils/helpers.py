@@ -1,5 +1,6 @@
 """Contain utility functions and constants."""
 import datetime
+from flask import jsonify
 from collections import namedtuple
 
 from api.models import Activity, ActivityType
@@ -55,6 +56,26 @@ def parse_log_activity_fields(result):
     return ParsedResult(
         activity, activity_type, activity_date, activity_value
     )
+
+
+def find_society(society):
+    """Find the society within the DB and return it."""
+    if society:
+        response = jsonify({
+            "data": society.serialize(),
+            "status": "success",
+            "message": "Society {} fetched successfully.".format(society.name)
+        })
+        response.status_code = 200
+        return response
+    else:
+        response = jsonify({
+            "data": None,
+            "status": "fail",
+            "message": "Specified society does not exist."
+        })
+        response.status_code = 404
+    return response
 
 
 # def serialize_point(point):
